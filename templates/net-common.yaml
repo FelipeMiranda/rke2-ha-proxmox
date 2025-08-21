@@ -1,0 +1,10 @@
+version: 2
+ethernets:
+  enp6s18:               # Replace with your VM NIC name if different
+    dhcp4: false
+    addresses:
+      - ${ip}/${cidr_prefix}
+    gateway4: ${gateway}
+    nameservers:
+      addresses:
+        - ${dns1}

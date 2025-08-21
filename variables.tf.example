@@ -1,0 +1,164 @@
+variable "pm_api_url" {
+  description = "Proxmox API URL, e.g. https://<YOUR_IP>:8006/api2/json"
+  type        = string
+}
+
+variable "pm_api_token_id" {
+  description = "Proxmox API token ID, e.g. terraform-prov@pve!terraformToken"
+  type        = string
+  sensitive   = true
+}
+
+variable "pm_api_token_secret" {
+  description = "Proxmox API token secret"
+  type        = string
+  sensitive   = true
+}
+
+variable "pm_tls_insecure" {
+  description = "Allow insecure TLS to the API"
+  type        = bool
+  default     = true
+}
+
+variable "pm_target_node" {
+  description = "Proxmox node name to place the VMs on (e.g., proxmox-srv-001)"
+  type        = string
+}
+
+variable "template_name" {
+  description = "Existing Proxmox VM template name to clone (cloud-init enabled)"
+  type        = string
+}
+
+variable "storage" {
+  description = "Proxmox storage for the primary disk"
+  type        = string
+}
+
+variable "bridge" {
+  description = "Linux bridge in Proxmox"
+  type        = string
+  default     = "vmbr0"
+}
+
+variable "vlan_id" {
+  description = "Optional VLAN tag (omit or set null for none)"
+  type        = number
+  default     = null
+}
+
+variable "ssh_public_key_file" {
+  description = "Path to your SSH public key"
+  type        = string
+}
+
+variable "gateway" {
+  description = "Default gateway for the subnet"
+  type        = string
+  default     = "<YOUR_GATEWAY_IP>"
+}
+
+variable "cidr_prefix" {
+  description = "CIDR prefix (e.g., 24)"
+  type        = number
+  default     = 24
+}
+
+variable "vmid_base" {
+  description = "Base VMID to start from; each VM adds an offset"
+  type        = number
+  default     = 7000
+}
+
+variable "cpu_type" {
+  description = "QEMU CPU type"
+  type        = string
+  default     = "host"
+}
+
+variable "storage_etcd" { 
+    type = string
+    default = "<YOUR_STORAGE>" 
+}
+variable "storage_container" { 
+    type = string
+    default = "<YOUR_STORAGE>"
+}
+variable "storage_kubelet" { 
+    type = string
+    default = "<YOUR_STORAGE>" 
+}
+variable "storage_logs" { 
+    type = string 
+    default = "<YOUR_STORAGE>" 
+}
+
+variable "size_etcd_gb" { 
+    type = number
+    default = 20 
+}
+variable "size_container_gb" { 
+    type = number
+    default = 120 
+}
+variable "size_kubelet_master_gb" { 
+    type = number
+    default = 40 
+}
+variable "size_kubelet_worker_gb" { 
+    type = number
+    default = 80 
+}
+variable "size_logs_gb" { 
+    type = number
+    default = 40 
+}
+
+# Snippets de cloud-init (no storage snippets do Proxmox)
+variable "ci_user_master" { 
+    type = string
+    default = "<YOUR_STORAGE>:snippets/rke2-master-userdata.yaml" 
+}
+variable "ci_user_worker" { 
+    type = string
+    default = "<YOUR_STORAGE>:snippets/rke2-worker-userdata.yaml" 
+}
+
+variable "proxmox_ssh_host" { 
+    type = string
+}
+
+variable "proxmox_ssh_user" { 
+    type = string
+    default = "root" 
+}
+
+variable "proxmox_ssh_key_path" { 
+    type = string
+    default = "~/.ssh/id_rsa" 
+}
+
+# Path inside the node where the cephfs snippets live (adjust if needed)
+variable "snippets_dir" { 
+    type = string
+    default = "<YOUR_STORAGE>/snippets"
+}
+
+variable "cloudinit_storage" {
+  type        = string
+  description = "Storage to hold the cloud-init ISO"
+  default     = "<YOUR_STORAGE>"  # or "local-lvm"
+}
+
+variable "ci_username" {
+  type        = string
+  default     = "ubuntu"   # must match your image’s default user
+  description = "Default user for cloud-init"
+}
+
+variable "ci_password_hash" {
+  type        = string
+  sensitive   = true
+  description = "SHA-512 hash for the user password (use mkpasswd --method=SHA-512)"
+}

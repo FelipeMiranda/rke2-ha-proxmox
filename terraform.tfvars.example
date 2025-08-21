@@ -1,0 +1,19 @@
+pm_api_url           = "https://<PROXMOX_IP>:8006/api2/json"
+pm_api_token_id      = "terraform-prov@pve!terraformToken"
+pm_api_token_secret  = "<TOKEN_SECRETS>"
+pm_target_node       = "<PROXMOX NODE NAME>"
+
+template_name        = "<TEMPLATE NAME>"
+storage              = "<STORAGE NAME>"
+bridge               = "vmbr0"
+
+
+ssh_public_key_file  = "~/.ssh/id_rsa.pub"
+gateway              = "<YOUR VMBR0 GATEWAY IP>"
+cidr_prefix          = 24
+
+vmid_base            = 7000
+cpu_type             = "host"
+
+ci_username = "ubuntu"
+ci_password_hash = "<YOU CI PASSWORD HASH>"

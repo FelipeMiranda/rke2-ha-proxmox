@@ -1,0 +1,19 @@
+terraform {
+  required_version = ">= 1.5.0"
+  # REMOVE IF YOU WANT TO MANAGE STATE LOCALLY
+  backend "s3" {
+    bucket         = "<YOUR_BUCKET_NAME>"
+    key            = "<YOUR_OBJECT_KEY>"
+    region         = "<YOUR_AWS_REGION>"
+    use_lockfile   = true
+    dynamodb_table = "<YOUR_DYNAMODB_TABLE>"
+    encrypt        = true
+  }
+
+  required_providers {
+    proxmox = {
+      source  = "telmate/proxmox"
+      version = "3.0.2-rc03"
+    }
+  }
+}
