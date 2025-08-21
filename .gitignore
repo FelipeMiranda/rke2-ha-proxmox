@@ -1,0 +1,30 @@
+# Ignore all tfvars and sensitive files
+*.tfvars
+!*.tfvars.example
+
+# Ignore terraform state files and backup
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Ignore rendered and cache directories
+.rendered/
+__pycache__/
+
+# Ignore Ansible inventory and secrets
+ansible/hosts
+ansible/hosts.*
+ansible/group_vars/*.yml
+!ansible/group_vars/*.example
+
+# Ignore Python bytecode
+*.pyc
+
+# Ignore cloud images and other large files
+cloud-images/
+
+# Ignore other sensitive or local config files
+*.lock.hcl
+
+# Allow example files
+!*.example
