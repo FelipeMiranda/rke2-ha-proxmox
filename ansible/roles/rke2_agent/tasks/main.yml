@@ -1,0 +1,104 @@
+- name: Ensure RKE2 agent config dir
+  ansible.builtin.file:
+    path: /etc/rancher/rke2
+    state: directory
+    mode: "0755"
+
+- name: Render agent config
+  ansible.builtin.template:
+    src: agent-config.yaml.j2
+    dest: /etc/rancher/rke2/config.yaml
+    mode: "0644"
+
+- name: Download RKE2 install script
+  ansible.builtin.get_url:
+    url: https://get.rke2.io
+    dest: /tmp/rke2-install.sh
+    mode: "0755"
+
+- name: Wait for kubeconfig
+  ansible.builtin.wait_for:
+    path: /etc/rancher/rke2/rke2.yaml
+    timeout: 600
+  delegate_to: "{{ rke2_primary | default('rke2-master1') }}"
+
+- name: Install RKE2 agent
+  environment:
+    INSTALL_RKE2_TYPE: "agent"
+    INSTALL_RKE2_CHANNEL: "{{ rke2_channel }}"
+    INSTALL_RKE2_VERSION: "{{ rke2_version }}"
+  ansible.builtin.shell: |
+    set -o pipefail
+    /tmp/rke2-install.sh
+  args:
+    executable: /bin/bash
+    creates: /usr/local/bin/rke2
+
+- name: Enable & start rke2-agent
+  ansible.builtin.systemd:
+    name: rke2-agent
+    state: started
+    enabled: true
+
+
+# Wait for all worker nodes to be Ready using until/retries on a single task
+- name: Wait for all worker nodes to be Ready
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Node
+    kubeconfig: /etc/rancher/rke2/rke2.yaml
+  register: nodes_info
+  delegate_to: "rke2-master1"
+  until: >-
+    {{
+      nodes_info.resources | map(attribute='status.conditions')
+      | map('selectattr', 'type', 'equalto', 'Ready')
+      | map('selectattr', 'status', 'equalto', 'True')
+      | map('list')
+      | map('length')
+      | select('>', 0)
+      | list | length == nodes_info.resources | length
+    }}
+  retries: 30
+  delay: 10
+  failed_when: false
+
+# Optionally, fail if not ready after retries
+- name: Fail if nodes are not Ready after waiting
+  ansible.builtin.fail:
+    msg: "Not all worker nodes became Ready after waiting."
+  when: >-
+    not (
+      nodes_info.resources | map(attribute='status.conditions')
+      | map('selectattr', 'type', 'equalto', 'Ready')
+      | map('selectattr', 'status', 'equalto', 'True')
+      | map('list')
+      | map('length')
+      | select('>', 0)
+      | list | length == nodes_info.resources | length
+    )
+
+- name: Ensure all worker nodes are ready
+  ansible.builtin.assert:
+    that:
+      - "item.status.conditions | selectattr('type', 'equalto', 'Ready') | selectattr('status', 'equalto', 'True') | list | length > 0"
+  loop: "{{ nodes_info.resources }}"
+  delegate_to: "rke2-master1"
+
+- name: Label agent nodes for Longhorn storage
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Node
+    name: "{{ inventory_hostname }}"
+    resource_definition:
+      metadata:
+        labels:
+          longhorn-storage: "true"
+          node.longhorn.io/create-default-disk: "true"
+    state: present
+    kubeconfig: /etc/rancher/rke2/rke2.yaml
+  delegate_to: "rke2-master1"
+  when:
+    - "'workers' in group_names"
+    - inventory_hostname in groups['workers']
+

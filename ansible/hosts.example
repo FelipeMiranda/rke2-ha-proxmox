@@ -1,0 +1,17 @@
+[masters]
+rke2-master1 ansible_host=<YOUR_IP>.51
+rke2-master2 ansible_host=<YOUR_IP>.52
+rke2-master3 ansible_host=<YOUR_IP>.53
+
+[workers]
+rke2-agent1  ansible_host=<YOUR_IP>.54
+rke2-agent2  ansible_host=<YOUR_IP>.55
+rke2-agent3  ansible_host=<YOUR_IP>.56
+
+[ha]
+rke2-ha1     ansible_host=<YOUR_IP>.57 keepalived_priority=101
+rke2-ha2     ansible_host=<YOUR_IP>.58 keepalived_priority=100
+
+[all:vars]
+ansible_user=ubuntu
+ansible_become=true

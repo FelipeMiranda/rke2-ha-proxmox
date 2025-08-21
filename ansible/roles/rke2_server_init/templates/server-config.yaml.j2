@@ -1,0 +1,13 @@
+write-kubeconfig-mode: "0644"
+advertise-address: "{{ ansible_host }}"
+node-name: "{{ inventory_hostname }}"
+tls-san:
+{% for s in rke2_tls_san %}
+  - "{{ s }}"
+{% endfor %}
+cni: "{{ rke2_cni }}"
+token: "{{ rke2_token }}"
+protect-kernel-defaults: true
+node-ip: "{{ ansible_host }}"
+cluster-cidr: "{{ rke2_cluster_cidr }}"
+service-cidr: "{{ rke2_service_cidr }}"

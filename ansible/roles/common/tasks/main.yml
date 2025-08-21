@@ -1,0 +1,57 @@
+- name: Set kernel sysctl params
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/99-k8s.conf
+    reload: true
+  loop: "{{ sysctl_tweaks | dict2items }}"
+  when: "'ha' not in group_names"
+
+- name: Ensure qemu-guest-agent installed
+  ansible.builtin.apt:
+    name: qemu-guest-agent
+    state: present
+    update_cache: true
+
+- name: Enable qemu-guest-agent
+  ansible.builtin.systemd:
+    name: qemu-guest-agent
+    state: started
+    enabled: true
+
+- name: Ensure pip3 is installed
+  ansible.builtin.package:
+    name: python3-pip
+    state: present
+  become: true
+
+- name: Ensure Python Kubernetes library is installed
+  ansible.builtin.package:
+    name: python3-kubernetes
+    state: present
+  become: true
+
+- name: Install required packages for Longhorn
+  ansible.builtin.apt:
+    name:
+      - open-iscsi
+      - nfs-common
+      - cryptsetup
+      - dmsetup
+    state: present
+    update_cache: true
+  when: "'workers' in group_names"
+
+- name: Ensure iscsid service is enabled and running
+  ansible.builtin.service:
+    name: iscsid
+    state: started
+    enabled: true
+  when: "'workers' in group_names"
+
+- name: Enable mount propagation (if required)
+  ansible.builtin.debug:
+    msg: "Mount propagation is enabled by default in modern Kubernetes setups. No additional action needed."
+  when: "'workers' in group_names"

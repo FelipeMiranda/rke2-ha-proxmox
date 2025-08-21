@@ -1,0 +1,19 @@
+---
+# Handlers for MetalLB role
+- name: Apply MetalLB pool
+  kubernetes.core.k8s:
+    state: present
+    src: /root/metallb-pool.yaml
+  when: metallb_pool is changed
+
+- name: Apply MetalLB IPAddressPool
+  kubernetes.core.k8s:
+    state: present
+    src: /root/metallb-ipaddresspool.yaml
+  when: metallb_ipaddresspool is changed
+
+- name: Apply MetalLB L2Advertisement
+  kubernetes.core.k8s:
+    state: present
+    src: /root/metallb-l2advertisement.yaml
+  when: metallb_l2advertisement is changed

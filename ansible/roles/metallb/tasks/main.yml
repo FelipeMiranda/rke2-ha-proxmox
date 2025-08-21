@@ -1,0 +1,119 @@
+- name: Download Helm install script
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+    dest: /tmp/get-helm-3.sh
+    mode: '0755'
+
+- name: Install Helm
+  ansible.builtin.shell: |
+    set -o pipefail
+    bash /tmp/get-helm-3.sh
+  args:
+    executable: /bin/bash
+    creates: /usr/local/bin/helm
+  when: inventory_hostname == 'rke2-master1'
+
+- name: Install Helm diff plugin
+  ansible.builtin.shell: |
+    helm plugin install https://github.com/databus23/helm-diff
+  args:
+    creates: /root/.local/share/helm/plugins/helm-diff
+  when: inventory_hostname == 'rke2-master1'
+
+- name: Ensure /root/.kube directory exists
+  ansible.builtin.file:
+    path: /root/.kube
+    state: directory
+    mode: '0700'
+
+- name: Ensure kubeconfig for root
+  ansible.builtin.file:
+    src: /etc/rancher/rke2/rke2.yaml
+    dest: /root/.kube/config
+    state: link
+  when: inventory_hostname == 'rke2-master1'
+
+- name: Add MetalLB repo
+  kubernetes.core.helm_repository:
+    name: metallb
+    repo_url: https://metallb.github.io/metallb
+  when: inventory_hostname == 'rke2-master1'
+
+- name: Update Helm repositories
+  kubernetes.core.helm_repository:
+    name: metallb
+    repo_url: https://metallb.github.io/metallb
+  when: inventory_hostname == 'rke2-master1'
+
+- name: Copy values.yaml to target host
+  ansible.builtin.copy:
+    src: roles/metallb/values/values.yaml
+    dest: /tmp/values.yaml
+    mode: '0644'
+  when: inventory_hostname == 'rke2-master1'
+
+- name: Install/upgrade MetalLB
+  kubernetes.core.helm:
+    name: metallb
+    chart_ref: metallb/metallb
+    release_namespace: metallb-system
+    create_namespace: true
+    state: present
+    chart_version: "0.13.10"
+    values_files:
+      - /tmp/values.yaml
+
+- name: Wait for MetalLB pods to be ready
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: metallb-system
+  register: metallb_pods
+  until: >
+    metallb_pods.resources | map(attribute='status.phase') | select('equalto', 'Running') | list | length == metallb_pods.resources | length
+  retries: 10
+  delay: 60
+
+- name: Wait for MetalLB webhook service to be available
+  kubernetes.core.k8s_info:
+    kind: Service
+    namespace: metallb-system
+    name: metallb-webhook-service
+  register: metallb_webhook_service
+  until: metallb_webhook_service.resources | length > 0
+  retries: 10
+  delay: 60
+
+- name: Configure IPAddressPool
+  ansible.builtin.copy:
+    dest: /root/metallb-ipaddresspool.yaml
+    mode: '0644'
+    content: |
+      apiVersion: metallb.io/v1beta1
+      kind: IPAddressPool
+      metadata:
+        name: {{ metallb_address_pools[0].name }}
+        namespace: metallb-system
+      spec:
+        addresses:
+          {% for cidr in metallb_address_pools[0].addresses %}
+          - "{{ cidr }}/32"
+          {% endfor %}
+  register: metallb_ipaddresspool
+  notify:
+    - Apply MetalLB IPAddressPool
+
+- name: Configure L2Advertisement
+  ansible.builtin.copy:
+    dest: /root/metallb-l2advertisement.yaml
+    mode: '0644'
+    content: |
+      apiVersion: metallb.io/v1beta1
+      kind: L2Advertisement
+      metadata:
+        name: l2adv-{{ metallb_address_pools[0].name }}
+        namespace: metallb-system
+      spec: {}
+  register: metallb_l2advertisement
+  notify:
+    - Apply MetalLB L2Advertisement
+

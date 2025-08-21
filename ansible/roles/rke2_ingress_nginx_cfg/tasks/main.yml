@@ -1,0 +1,5 @@
+- name: Apply rke2-ingress-nginx HelmChartConfig
+  ansible.builtin.copy:
+    src: templates/rke2-ingress-nginx-config.yaml.j2
+    dest: /var/lib/rancher/rke2/server/manifests/rke2-ingress-nginx-config.yaml
+    mode: '0644'

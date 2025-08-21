@@ -1,0 +1,62 @@
+# RKE2
+rke2_channel: "stable"
+rke2_version: "v1.33.2+rke2r1"
+rke2_token: "my_lab_2025"
+rke2_cni: "calico"
+rke2_cluster_cidr: "10.42.0.0/16"
+rke2_service_cidr: "10.43.0.0/16"
+rke2_tls_san:
+  - "172.16.0.51"
+  - "172.16.0.52"
+  - "172.16.0.53"
+  - "172.16.0.54"
+  - "172.16.0.55"
+  - "172.16.0.56"
+  - "172.16.0.59"
+  - "rke2-ha-vip.my.lab"
+
+# HA VIP & NIC (adjust NIC if needed)
+ha_vip: "172.16.0.59"
+ha_iface: "enp6s18"           # ou use match "en*" no keepalived conf se preferir
+
+# Calico
+calico_iface: "enp6s18"
+calico_mtu: 1450
+
+# MetalLB (pool for Services; keep VIP .50 for LB if you want)
+metallb_address_pools:
+  - name: default
+    addresses: ["172.16.0.50"]
+
+# Ingress NGINX
+ingress_namespace: "ingress-nginx"
+
+# Longhorn
+longhorn_namespace: "longhorn-system"
+longhorn_version: "v1.9.1"
+
+# Sysctl kernel safety knobs
+sysctl_tweaks:
+  vm.overcommit_memory: "1"
+  kernel.panic_on_oops: "1"
+  vm.panic_on_oom: "0"
+  kernel.panic: "10"
+
+# HAProxy
+haproxy_backends:
+  k8s_api:
+    port: 6443
+    servers:
+      - "172.16.0.51:6443"
+      - "172.16.0.52:6443"
+      - "172.16.0.53:6443"
+  rke2_reg:
+    port: 9345
+    servers:
+      - "172.16.0.51:9345"
+      - "172.16.0.52:9345"
+      - "172.16.0.53:9345"
+
+# Bootstrap
+rke2_primary: "rke2-master1"   # primeiro master para iniciar o cluster
+server_url: "https://172.16.0.59:9345"  # todos apontam para o VIP/HAProxy

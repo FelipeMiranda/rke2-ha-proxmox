@@ -1,0 +1,50 @@
+- name: Base OS prep on all nodes
+  hosts: all
+  become: true
+  roles:
+    - common  # sysctl, qemu-guest-agent
+
+- name: Configure HA pair (keepalived + haproxy)
+  hosts: ha
+  become: true
+  roles:
+    - ha_keepalived
+    - ha_haproxy
+
+- name: Bootstrap first RKE2 server (init)
+  hosts: "{{ rke2_primary | default('rke2-master1') }}"
+  become: true
+  roles:
+    - rke2_calico_cfg
+    - rke2_ingress_nginx_cfg
+    - rke2_server_init
+
+- name: Join remaining RKE2 servers
+  hosts: "masters:!{{ rke2_primary | default('rke2-master1') }}"
+  become: true
+  roles:
+    - rke2_server_join
+
+- name: Join RKE2 agents
+  hosts: workers
+  become: true
+  roles:
+    - rke2_agent
+
+- name: Install MetalLB
+  hosts: "{{ rke2_primary | default('rke2-master1') }}"
+  become: true
+  roles:
+    - metallb
+
+- name: Install Longhorn
+  hosts: "{{ rke2_primary | default('rke2-master1') }}"
+  become: true
+  roles:
+    - longhorn
+
+- name: Install Prometheus
+  hosts: "{{ rke2_primary | default('rke2-master1') }}"
+  become: true
+  roles:
+    - prometheus

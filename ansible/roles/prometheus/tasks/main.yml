@@ -1,0 +1,27 @@
+# Add Prometheus Helm repo
+- name: Add Prometheus Helm repository
+  kubernetes.core.helm_repository:
+    name: prometheus-community
+    repo_url: https://prometheus-community.github.io/helm-charts
+  when: inventory_hostname == 'rke2-master1'
+
+- name: Copy values.yaml to target host
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/roles/prometheus/values/values.yaml"
+    dest: "/tmp/prometheus-values.yaml"
+    mode: '0644'
+  when: inventory_hostname == 'rke2-master1'
+
+# Deploy Prometheus using Helm
+- name: Deploy Prometheus using Helm
+  kubernetes.core.helm:
+    name: prometheus
+    chart_ref: prometheus-community/kube-prometheus-stack
+    release_namespace: monitoring
+    create_namespace: true
+    chart_version: "76.4.0"
+    values_files:
+      - "/tmp/prometheus-values.yaml"
+    state: present
+  register: prometheus_helm_result
+  when: inventory_hostname == 'rke2-master1'

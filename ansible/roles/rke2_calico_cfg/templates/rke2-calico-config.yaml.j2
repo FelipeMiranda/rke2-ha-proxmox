@@ -1,0 +1,20 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: rke2-calico
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    installation:
+      calicoNetwork:
+        mtu: {{ calico_mtu }}
+        bgp: "Disabled"
+        ipPools:
+        - cidr: {{ rke2_cluster_cidr }}
+          encapsulation: VXLAN
+          natOutgoing: Enabled
+          nodeSelector: "all()"
+      nodeAddressAutodetectionV4:
+        interface: "{{ calico_iface }}"
+    felixConfiguration:
+      featureDetectOverride: "ChecksumOffloadBroken=false"

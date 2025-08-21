@@ -1,0 +1,39 @@
+global
+  log /dev/log local0
+  log /dev/log local1 notice
+  user haproxy
+  group haproxy
+  daemon
+  ca-base /etc/ssl/certs
+  crt-base /etc/ssl/private
+defaults
+  log global
+  mode tcp
+  option tcplog
+  timeout connect 5s
+  timeout client  50s
+  timeout server  50s
+
+frontend k8s_api_fe
+  bind 0.0.0.0:{{ haproxy_backends.k8s_api.port }}
+  default_backend k8s_api_be
+
+backend k8s_api_be
+  balance roundrobin
+  option tcp-check
+  default-server inter 3s fall 3 rise 2
+{% for s in haproxy_backends.k8s_api.servers %}
+  server cp{{ loop.index }} {{ s }} check
+{% endfor %}
+
+frontend rke2_reg_fe
+  bind 0.0.0.0:{{ haproxy_backends.rke2_reg.port }}
+  default_backend rke2_reg_be
+
+backend rke2_reg_be
+  balance roundrobin
+  option tcp-check
+  default-server inter 3s fall 3 rise 2
+{% for s in haproxy_backends.rke2_reg.servers %}
+  server cp{{ loop.index }} {{ s }} check
+{% endfor %}
