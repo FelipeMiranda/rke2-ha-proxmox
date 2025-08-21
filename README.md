@@ -20,6 +20,34 @@ This repository contains infrastructure-as-code and automation for deploying a h
 
 ## Getting Started
 
+## Cluster VM Specifications
+
+### Control Plane Nodes
+- 8 vCPU
+- 8 GB RAM
+- 32 GB disk
+
+### Worker Nodes
+- 8 vCPU
+- 16 GB RAM
+- 32 GB disk
+- 1 TB disk (storage disk for Longhorn)
+
+### Hostname/IP/Role Table
+
+| Hostname        | IP           | Role                          |
+|-----------------|--------------|-------------------------------|
+| rke2-vip-lb     | 172.16.0.50  | MetalLB VIP                   |
+| rke2-master1    | 172.16.0.51  | Control Plane                 |
+| rke2-master2    | 172.16.0.52  | Control Plane                 |
+| rke2-master3    | 172.16.0.53  | Control Plane                 |
+| rke2-agent1     | 172.16.0.54  | Worker Node                   |
+| rke2-agent2     | 172.16.0.55  | Worker Node                   |
+| rke2-agent3     | 172.16.0.56  | Worker Node                   |
+| rke2-ha1        | 172.16.0.57  | Fixed Address Registration    |
+| rke2-ha2        | 172.16.0.58  | Fixed Address Registration    |
+| rke2-ha-vip     | 172.16.0.59  | Fixed Address Registration VIP |
+
 ### Prerequisites
 - Proxmox VE cluster
 - Terraform
