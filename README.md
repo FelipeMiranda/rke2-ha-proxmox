@@ -18,8 +18,6 @@ This repository contains infrastructure-as-code and automation for deploying a h
 - `scripts/`: Helper scripts
 - `.rendered/`: Auto-generated files (ignored by git)
 
-## Getting Started
-
 ## Cluster VM Specifications
 
 ### Control Plane Nodes
@@ -57,7 +55,7 @@ This repository contains infrastructure-as-code and automation for deploying a h
 ### Setup
 1. **Clone the repository:**
    ```sh
-   git clone https://github.com/yourusername/rke2-cluster.git
+   git clone https://github.com/FelipeMiranda/rke2-cluster.git
    cd rke2-cluster
    ```
 2. **Configure variables:**
