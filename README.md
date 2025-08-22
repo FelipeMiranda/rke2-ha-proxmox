@@ -22,14 +22,16 @@ This repository contains infrastructure-as-code and automation for deploying a h
 
 The following are the recommended VM specifications for this cluster. The goal is to separate disks for ETCD, Containerd, Kubelet, and container logs, which helps distribute I/O operations and prevents disk contention. The recommended mount points for each disk are as follows:
 
-| Purpose           | Mount Point      | Recommended Size |
-|-------------------|-----------------|------------------|
-| OS & root         | `/`             | 32 GB            |
-| ETCD data         | `/var/lib/etcd` | 32 GB            |
-| Containerd data   | `/var/lib/containerd` | 64 GB      |
-| Kubelet data      | `/var/lib/kubelet`    | 64 GB      |
-| Container logs    | `/var/log/pods`       | 32 GB      |
-| Longhorn storage  | `/var/lib/longhorn`   | 1 TB       |
+| Purpose           | Mount Point            | Recommended Size | Applies To         |
+|-------------------|-----------------------|------------------|--------------------|
+| OS & root         | `/`                   | 32 GB            | Master & Worker    |
+| ETCD data         | `/var/lib/etcd`       | 32 GB            | Master only        |
+| Containerd data   | `/var/lib/containerd` | 64 GB            | Master & Worker    |
+| Kubelet data      | `/var/lib/kubelet`    | 64 GB            | Master & Worker    |
+| Container logs    | `/var/log/pods`       | 32 GB            | Master & Worker    |
+| Longhorn storage  | `/var/lib/longhorn`   | 1 TB             | Worker only        |
+
+> Adjust disk sizes as needed based on your workload requirements.
 
 > Adjust disk sizes as needed based on your workload requirements.
 
