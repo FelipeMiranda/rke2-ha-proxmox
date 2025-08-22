@@ -33,7 +33,6 @@ The following are the recommended VM specifications for this cluster. The goal i
 
 > Adjust disk sizes as needed based on your workload requirements.
 
-> Adjust disk sizes as needed based on your workload requirements.
 
 
 ### Control Plane Nodes
