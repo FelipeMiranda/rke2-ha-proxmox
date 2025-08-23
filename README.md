@@ -2,6 +2,9 @@
 
 This repository contains infrastructure-as-code and automation for deploying a highly available RKE2 (Rancher Kubernetes Engine 2) cluster on Proxmox using Terraform and Ansible.
 
+<!-- Project Introduction Video -->
+[![Watch the video](https://img.youtube.com/vi/yTbat4PzjlA/hqdefault.jpg)](https://www.youtube.com/watch?v=yTbat4PzjlA)
+
 ## Features
 - Automated VM provisioning on Proxmox with Terraform
 - Cluster configuration and application deployment with Ansible
@@ -57,6 +60,8 @@ The following are the recommended VM specifications for this cluster. The goal i
 | rke2-ha1        | 172.16.0.57  | Fixed Address Registration    |
 | rke2-ha2        | 172.16.0.58  | Fixed Address Registration    |
 | rke2-ha-vip     | 172.16.0.59  | Fixed Address Registration VIP |
+
+> Adjust IP's and Hostnames as needed based on your network.
 
 ### Prerequisites
 - Proxmox VE cluster
