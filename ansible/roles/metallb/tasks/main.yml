@@ -1,9 +1,3 @@
-- name: Download Helm install script
-  ansible.builtin.get_url:
-    url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-    dest: /tmp/get-helm-3.sh
-    mode: '0755'
-
 - name: Install Helm
   ansible.builtin.shell: |
     set -o pipefail
@@ -99,9 +93,14 @@
           - "{{ cidr }}/32"
           {% endfor %}
   register: metallb_ipaddresspool
-  notify:
-    - Apply MetalLB IPAddressPool
 
+- name: Apply MetalLB IPAddressPool manifest
+  kubernetes.core.k8s:
+    state: present
+    src: /root/metallb-ipaddresspool.yaml
+    kubeconfig: /root/.kube/config
+  when: inventory_hostname == 'rke2-master1'
+  
 - name: Configure L2Advertisement
   ansible.builtin.copy:
     dest: /root/metallb-l2advertisement.yaml
@@ -114,6 +113,11 @@
         namespace: metallb-system
       spec: {}
   register: metallb_l2advertisement
-  notify:
-    - Apply MetalLB L2Advertisement
+
+- name: Apply MetalLB L2Advertisement manifest
+  kubernetes.core.k8s:
+    state: present
+    src: /root/metallb-l2advertisement.yaml
+    kubeconfig: /root/.kube/config
+  when: inventory_hostname == 'rke2-master1'
 
